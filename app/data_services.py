@@ -54,6 +54,10 @@ class PriceService:
             join_clause = "JOIN ports ON prices.dest_code = ports.code"
             where_clause = "orig_code = :origin AND ports.parent_slug IN :destination_slugs"
             params.update({"origin": origin, "destination_slugs": tuple(destination_region_slugs)})
+        elif origin_region_slugs and not destination_region_slugs:
+            join_clause = "JOIN ports ON prices.orig_code = ports.code"
+            where_clause = "dest_code = :destination AND ports.parent_slug IN :origin_slugs"
+            params.update({"destination": destination, "origin_slugs": tuple(origin_region_slugs)})
         else:
             join_clause = "JOIN ports p1 ON prices.orig_code = p1.code JOIN ports p2 ON prices.dest_code = p2.code"
             where_clause = "p1.parent_slug IN :origin_slugs AND p2.parent_slug IN :destination_slugs"
@@ -68,7 +72,7 @@ class PriceService:
         return [
             {
                 "day": day.strftime("%Y-%m-%d"),
-                "average_price": round(avg_price, 2) if avg_price is not None and count >= 3 else None
+                "average_price": round(float(avg_price), 2) if avg_price is not None and count >= 3 else None
             }
             for day, avg_price, count in result
         ]
@@ -95,7 +99,8 @@ class RegionService:
             if slugs and len(slugs[0]) >= 0 and len(slugs) == 1:
                 validation_query, validation_params = RegionService._build_query(slug, "slug = :condition")
                 result = db.session.execute(validation_query, validation_params)
-
+                if result.fetchone() is None:
+                    return []
 
             return slugs
         except Exception as e:
