@@ -9,7 +9,6 @@ def init_db(app):
     """Initialize the database with the Flask app."""
     db.init_app(app)
 
-
 class PriceService:
     BASE_QUERY = """
         SELECT day, AVG(price) as average_price, COUNT(price)
@@ -24,16 +23,23 @@ class PriceService:
     @staticmethod
     def calculate_average_prices(date_from: str, date_to: str, origin: str, destination: str) -> List[
         Dict[str, Optional[float]]]:
-        """Calculate average prices based on origin and destination."""
+        """
+        Calculate average prices based on the given origin and destination.
+
+        Returns:
+            List[Dict[str, Optional[float]]]: List of dictionaries containing the day and average price.
+        """
         try:
+            # Fetch slugs for the origin and destination regions
             region_service = RegionService()
             origin_region_slugs = region_service.fetch_child_slugs(origin)
             destination_region_slugs = region_service.fetch_child_slugs(destination)
 
-            query, params = PriceService._build_query(origin_region_slugs, destination_region_slugs, origin, destination, date_from,
-                                                      date_to)
+            # Build the SQL query based on the available slugs
+            query, params = PriceService._build_query(origin_region_slugs, destination_region_slugs, origin, destination, date_from, date_to)
             result = db.session.execute(query, params)
 
+            # Process and return the price data
             return PriceService._process_price_data(result)
         except Exception as e:
             logging.error(f"Error calculating average prices: {str(e)}")
@@ -42,7 +48,20 @@ class PriceService:
     @staticmethod
     def _build_query(origin_region_slugs: List[str], destination_region_slugs: List[str], origin: str, destination: str,
                      date_from: str, date_to: str):
-        """Build the appropriate SQL query based on slug availability."""
+        """
+        Construct the SQL query based on the availability of slugs.
+
+        Args:
+            origin_region_slugs (List[str]): List of slugs for origin regions.
+            destination_region_slugs (List[str]): List of slugs for destination regions.
+            origin (str): Origin location slug.
+            destination (str): Destination location slug.
+            date_from (str): Start date for the price range.
+            date_to (str): End date for the price range.
+
+        Returns:
+            Tuple[text, Dict[str, str]]: SQL query and corresponding parameters.
+        """
         join_clause = ""
         where_clause = ""
         params = {"date_from": date_from, "date_to": date_to}
@@ -68,35 +87,48 @@ class PriceService:
 
     @staticmethod
     def _process_price_data(result) -> List[Dict[str, Optional[float]]]:
-        """Process the query results into the required format."""
+        """
+        Convert the query result into the desired format.
+
+        Args:
+            result: The raw query result.
+
+        Returns:
+            List[Dict[str, Optional[float]]]: Processed list of dictionaries with day and average price.
+        """
         return [
             {
                 "day": day.strftime("%Y-%m-%d"),
-                "average_price": round(float(avg_price), 2) if avg_price is not None and count >= 3 else None
+                "average_price": None if avg_price is None or count < 3 else round(float(avg_price), 2)
             }
             for day, avg_price, count in result
         ]
 
 class RegionService:
     BASE_QUERY = """
-            SELECT slug FROM regions WHERE {condition}
-        """
+        SELECT slug FROM regions WHERE {condition}
+    """
 
     @staticmethod
     def fetch_child_slugs(slug: str) -> List[str]:
-        """Retrieve all child slugs for a given slug."""
+        """
+        Retrieve all child slugs for a given slug.
 
+        Args:
+            slug (str): Parent region slug.
+
+        Returns:
+            List[str]: List of child slugs including the given slug.
+        """
         try:
             slugs = [slug]
             for current_slug in slugs:
                 query, params = RegionService._build_query(current_slug, "parent_slug = :condition")
                 result = db.session.execute(query, params)
-                slugs.extend(
-                    [row[0] for row in result]
-                )
+                slugs.extend([row[0] for row in result])
 
-            # Validate if the input slug exists
-            if slugs and len(slugs[0]) >= 0 and len(slugs) == 1:
+            # Validate if the original slug exists in the database
+            if len(slugs) == 1:
                 validation_query, validation_params = RegionService._build_query(slug, "slug = :condition")
                 result = db.session.execute(validation_query, validation_params)
                 if result.fetchone() is None:
@@ -109,7 +141,16 @@ class RegionService:
 
     @staticmethod
     def _build_query(condition_value: str, condition: str):
-        """Build the SQL query with the appropriate condition."""
+        """
+        Build the SQL query with the specified condition.
+
+        Args:
+            condition_value (str): Value for the condition in the query.
+            condition (str): Condition string to format into the query.
+
+        Returns:
+            Tuple[text, Dict[str, str]]: SQL query and parameters.
+        """
         query = text(RegionService.BASE_QUERY.format(condition=condition))
         params = {"condition": condition_value}
         return query, params
