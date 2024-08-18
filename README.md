@@ -1,110 +1,12 @@
-# Data definition
+## Ratestask API
 
-We are providing you with a small set of simplified real-world data. A
-database dump is provided that includes the following information:
+## Introduction
 
-## Ports
+The Ratestask API is an implementation of the [Xeneta ratestask](https://github.com/xeneta/ratestask) project.
 
-Information about ports, including:
+## Setup Instructions
 
-* 5-character port code
-* Port name
-* Slug describing which region the port belongs to
-
-## Regions
-
-A hierarchy of regions, including:
-
-* Slug - a machine-readable form of the region name
-* The name of the region
-* Slug describing which parent region the region belongs to
-
-Note that a region can have both ports and regions as children, and the region
-tree does not have a fixed depth.
-
-## Prices
-
-Individual daily prices between ports, in USD.
-
-* 5-character origin port code
-* 5-character destination port code
-* The day for which the price is valid
-* The price in USD
-
-# Assignment: HTTP-based API
-
-Develop an [HTTP-based API](#task-1-http-based-api) capable of handling the GET request described below. Our stack is based on Flask, but you are free to choose any Python framework you like. All data returned is expected to be in JSON format. Please demonstrate your knowledge of SQL (as opposed to using ORM querying tools).
-
-
-Implement an API endpoint that takes the following parameters:
-
-* date_from
-* date_to
-* origin
-* destination
-
-and returns a list with the average prices for each day on a route between port codes *origin* and *destination*. Return an empty value (JSON null) for days on which there are less than 3 prices in total.
-
-Both the *origin, destination* params accept either port codes or region slugs, making it possible to query for average prices per day between geographic groups of ports.
-
-    curl "http://127.0.0.1/rates?date_from=2016-01-01&date_to=2016-01-10&origin=CNSGH&destination=north_europe_main"
-
-    [
-        {
-            "day": "2016-01-01",
-            "average_price": 1112
-        },
-        {
-            "day": "2016-01-02",
-            "average_price": 1112
-        },
-        {
-            "day": "2016-01-03",
-            "average_price": null
-        },
-        ...
-    ]
-
-# Requirements
-
-* Write the solution using Python and SQL, you can use an ORM but please
-  demonstrate some raw SQL
-
-* Keep your solution in a Version Control System of your
-  choice. *Provide the solution as a public repository that can be
-  easily cloned by our development team.*
-
-* Provide any instructions needed to set up the system in `README.md`.
-
-* Ensure the API handles errors and edge cases properly.
-
-* Use dates in YYYY-MM-DD format for the API. There is no need for more
-  complicated date processing.
-
-# Extra details
-
-* It usually takes 2 - 6 hours to complete this task for a developer with 2+ years of experience in building APIs with Python and SQL.
-
-* Our key evaluation criteria:
-    - Ease of setup and testing
-    - Code clarity and simplicity
-    - Comments where appropriate
-    - Code organisation
-    - Tests
-
-* You are encouraged to modify or extend the database schema if you think a different model fits the task better.
-
-* If you have any questions, please don't hesitate to contact us
-
-* Please let us know how much time you spent on the task, and of any difficulties that you ran into.
-
-
-# Initial setup
-
-We have provided a simple Docker setup for you, which will start a
-PostgreSQL instance populated with the assignment data. You don't have
-to use it, but you might find it convenient. If you decide to use
-something else, make sure to include instructions on how to set it up.
+### I. Initial Setup: Docker
 
 You can execute the provided Dockerfile by running:
 
@@ -131,7 +33,92 @@ alternatively, use `docker exec` if you do not have `psql` installed:
 ```bash
 docker exec -e PGPASSWORD=ratestask -it ratestask psql -U postgres
 ```
+### II. Application Setup to run application
 
-Keep in mind that any data written in the Docker container will
-disappear when it shuts down. The next time you run it, it will start
-with a clean state.
+Once your Docker container is running and you have verified that PostgreSQL is accessible, follow below steps to set up and run the Flask application:
+
+#### 1. Clone the Repository
+
+```bash
+git clone https://github.com/gshubham-dev/ratestask.git
+cd ratestask
+```
+
+#### 2. Create a Virtual Environment
+Create a virtual environment to manage dependencies:
+
+`macOS/Linux:`
+
+```bash
+source venv/bin/activate
+```
+
+` Windows:`
+
+```bash
+venv\Scripts\activate
+```
+
+#### 3. Install Dependencies
+Install the required Python packages using `pip`:
+
+```bash
+pip install -r requirements.txt
+```
+
+#### 4. Run the Application
+Start the Flask application:
+
+```bash
+flask run
+```
+or
+```bash
+python run.py
+```
+
+
+#### 5. Access the API
+
+You can access the API using the following URL:
+
+* http://127.0.0.1:5000
+* 
+### Fetching Rates
+
+#### Example 1:
+
+Example requests:
+
+1. Using region codes:
+   ```bash
+   curl --location 'http://127.0.0.1:5000/rates?date_from=2016-01-01&date_to=2016-01-10&origin=china_main&destination=north_europe_main'
+   ```
+
+2. Using port codes:
+   ```bash
+   curl --location 'http://127.0.0.1:5000/rates?date_from=2016-01-10&date_to=2017-01-11&origin=CNSGH&destination=IEDUB'
+   ```
+
+## Tests
+
+To run the unit tests, execute the following command:
+
+```bash
+pytest
+```
+
+## <p style='color:green'>🎯 Key Design Decisions.</p>
+
+### 1. Average Price Calculation:
+- The **average price** between the origin and destination ports can result in several decimal places. To ensure clarity, the price is **rounded** to **two** **decimal** places, balancing precision with readability, rather than rounding to a whole number.
+
+### 2. Handling Invalid Origin and Destination:
+- Instead of returning an **error** for **invalid** origin or destination inputs, the solution returns an **empty** **response**. This design choice enhances user experience by allowing easy correction of input errors while ensuring smooth operation without compromising data integrity.
+
+### 3. Handling of Missing Days in Price Calculation:
+- The `calculate_average_prices` method calculates average prices for days that have corresponding records in the **prices** table. If a specific day within the requested date range lacks any records, that day will not be included in the final results. This ensures that the average price calculation only reflects days where at **least** **one** **price** record exists, following written SQL's behavior.
+
+## Total Time Spent
+The development of this project was accomplished in an estimated duration of 4 hours 20 min.
+Thank You !!
