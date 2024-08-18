@@ -6,7 +6,7 @@ The Ratestask API is an implementation of the [Xeneta ratestask](https://github.
 
 ## Setup Instructions
 
-### I. Initial Setup: Docker
+### I. <ins>Initial Setup: Docker</ins>
 
 You can execute the provided Dockerfile by running:
 
@@ -33,7 +33,7 @@ alternatively, use `docker exec` if you do not have `psql` installed:
 ```bash
 docker exec -e PGPASSWORD=ratestask -it ratestask psql -U postgres
 ```
-### II. Application Setup to run application
+### II. <ins>Application Setup to Run Application</ins>
 
 Once your Docker container is running and you have verified that PostgreSQL is accessible, follow below steps to set up and run the Flask application:
 
@@ -108,7 +108,7 @@ To run the unit tests, execute the following command:
 pytest
 ```
 
-## <p style='color:green'>🎯 Key Design Decisions.</p>
+## 🎯 Key Design Decisions**
 
 ### 1. Average Price Calculation:
 - The **average price** between the origin and destination ports can result in several decimal places. To ensure clarity, the price is **rounded** to **two** **decimal** places, balancing precision with readability, rather than rounding to a whole number.
