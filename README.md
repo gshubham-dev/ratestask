@@ -83,7 +83,7 @@ python run.py
 You can access the API using the following URL:
 
 * http://127.0.0.1:5000
-* 
+
 ### Fetching Rates
 
 #### Example 1:
