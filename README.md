@@ -62,10 +62,18 @@ venv\Scripts\activate
 ```
 
 #### 3. Install Dependencies
+
+**Before** installing the dependencies, ensure that PostgreSQL development libraries are installed
+
 Install the required Python packages using `pip`:
 
 ```bash
 pip install -r requirements.txt
+```
+or 
+
+```bash
+pip3 install -r requirements.txt
 ```
 
 #### 4. Run the Application
