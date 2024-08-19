@@ -34,7 +34,6 @@ class PriceService:
             region_service = RegionService()
             origin_region_slugs = region_service.fetch_child_slugs(origin)
             destination_region_slugs = region_service.fetch_child_slugs(destination)
-
             # Build the SQL query based on the available slugs
             query, params = PriceService._build_query(origin_region_slugs, destination_region_slugs, origin, destination, date_from, date_to)
             result = db.session.execute(query, params)
