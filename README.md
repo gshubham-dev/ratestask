@@ -50,12 +50,14 @@ Create a virtual environment to manage dependencies:
 `macOS/Linux:`
 
 ```bash
+python -m venv venv
 source venv/bin/activate
 ```
 
 ` Windows:`
 
 ```bash
+python -m venv venv
 venv\Scripts\activate
 ```
 
@@ -76,7 +78,6 @@ or
 ```bash
 python run.py
 ```
-
 
 #### 5. Access the API
 
