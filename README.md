@@ -113,10 +113,7 @@ pytest
 ### 1. Average Price Calculation:
 - The **average price** between the origin and destination ports can result in several decimal places. To ensure clarity, the price is **rounded** to **two** **decimal** places, balancing precision with readability, rather than rounding to a whole number.
 
-### 2. Handling Invalid Origin and Destination:
-- Instead of returning an **error** for **invalid** origin or destination inputs, the solution returns an **empty** **response**. This design choice enhances user experience by allowing easy correction of input errors while ensuring smooth operation without compromising data integrity.
-
-### 3. Handling of Missing Days in Price Calculation:
+### 2. Handling of Missing Days in Price Calculation:
 - The `calculate_average_prices` method calculates average prices for days that have corresponding records in the **prices** table. If a specific day within the requested date range lacks any records, that day will not be included in the final results. This ensures that the average price calculation only reflects days where at **least** **one** **price** record exists, following written SQL's behavior.
 
 ## Total Time Spent

@@ -155,4 +155,44 @@ class RegionService:
         params = {"condition": condition_value}
         return query, params
 
+class ValidatePortService:
+    @staticmethod
+    def port_exists(port_code: str) -> bool:
+        """
+        Check if a port exists in the database.
+
+        Returns:
+            bool: True if the port exists, False otherwise.
+        """
+        try:
+            result = db.session.execute(
+                text("SELECT EXISTS(SELECT 1 FROM ports WHERE code = :code)"),
+                {"code": port_code}
+            ).scalar()
+            return result
+        except Exception as e:
+            logging.error(f"Error checking if port exists: {str(e)}")
+            return False
+
+class ValidateSlugService:
+    @staticmethod
+    def slug_exists(slug: str) -> bool:
+        """
+        Check if a slug exists in the database.
+
+        Returns:
+            bool: True if the slug exists, False otherwise.
+        """
+        try:
+            result = db.session.execute(
+                text("SELECT EXISTS(SELECT 1 FROM regions WHERE slug = :slug)"),
+                {"slug": slug}
+            ).scalar()
+            return result
+        except Exception as e:
+            logging.error(f"Error checking if slug exists: {str(e)}")
+            return False
+
 price_service = PriceService()
+validate_port_service = ValidatePortService()
+validate_slug_service = ValidateSlugService()

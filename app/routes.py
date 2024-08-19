@@ -1,5 +1,5 @@
 from flask import request, jsonify, Blueprint
-from app.data_services import price_service
+from app.data_services import price_service, validate_slug_service, validate_port_service
 import datetime
 
 # Define a Blueprint for routing
@@ -34,6 +34,22 @@ def fetch_rates():
             jsonify({"error": "Invalid date format. Please use YYYY-MM-DD format."}),
             400
         )
+
+    # Validate origin parameter (port code or region slug)
+    if len(origin) <= 5 and origin.isupper():
+        if not validate_port_service.port_exists(origin):
+            return jsonify({"error": f"Port {origin} does not exist."}), 400
+    else:
+        if not validate_slug_service.slug_exists(origin):
+            return jsonify({"error": f"Region {origin} does not exist."}), 400
+
+    # Validate destination parameter (port code or region slug)
+    if len(destination) <= 5 and destination.isupper():
+        if not validate_port_service.port_exists(destination):
+            return jsonify({"error": f"Port {destination} does not exist."}), 400
+    else:
+        if not validate_slug_service.slug_exists(destination):
+            return jsonify({"error": f"Region {destination} does not exist."}), 400
 
     # Calculate average prices
     average_prices = price_service.calculate_average_prices(date_from, date_to, origin, destination)
