@@ -152,3 +152,39 @@ def test_fetch_rates_with_non_existent_region_and_port(client):
     data = response.get_json()
     assert response.status_code == 400
     assert "Region nonexistent does not exist." in data["error"]
+
+def test_fetch_rates_missing_all_parameters(client):
+    """
+    Test handling of missing required parameters: date_from, date_to, origin, and destination.
+    """
+    response = client.get("/rates")
+    data = response.get_json()
+    assert response.status_code == 400
+    assert "Required parameter(s) missing: date_from, date_to, origin, destination" in data["error"]
+
+def test_fetch_rates_missing_date_to_origin_and_destination(client):
+    """
+    Test handling of missing required parameters: date_to, origin, and destination when date_from is provided.
+    """
+    response = client.get("rates?date_from=2016-01-01")
+    data = response.get_json()
+    assert response.status_code == 400
+    assert "Required parameter(s) missing: date_to, origin, destination" in data["error"]
+
+def test_fetch_rates_missing_origin_and_destination(client):
+    """
+    Test handling of missing required parameters: origin and destination when date_from and date_to are provided.
+    """
+    response = client.get("/rates?date_from=2016-01-10&date_to=2017-01-11")
+    data = response.get_json()
+    assert response.status_code == 400
+    assert "Required parameter(s) missing: origin, destination" in data["error"]
+
+def test_fetch_rates_missing_destination(client):
+    """
+    Test handling of missing required parameter: destination when date_from and date_to and origin are provided.
+    """
+    response = client.get("/rates?date_from=2016-01-10&date_to=2017-01-11&origin=CNGGZ")
+    data = response.get_json()
+    assert response.status_code == 400
+    assert "Required parameter(s) missing: destination" in data["error"]
